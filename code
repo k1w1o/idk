@@ -1,0 +1,86 @@
+#include "raylib.h"
+#include <iostream>
+
+
+
+int main() {
+    // Настройки движения и прыжка
+    int screenWidth = 800;
+    int screenHeight = 600;
+    int squareSize = 50;
+    int speedX = 5;         // Скорость движения по оси X
+    int jumpHeight = 200;    // Максимальная высота прыжка
+    float gravity = 1.0f;    // Сила гравитации
+    float jumpSpeed = 15.0f; // Начальная скорость прыжка
+
+    // Параметры квадрата
+    int squareX = screenWidth / 2 - squareSize / 2;
+    int squareY = screenHeight - squareSize;
+    bool isJumping = false;
+    float velocityY = 0;
+
+    int posX1 = 200, posY1 = 500;
+
+    InitWindow(screenWidth, screenHeight, "Moving and Jumping Square");
+
+
+
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        // Создание объектов прямоугольников для игрока и препятствия
+        Rectangle playerRec = { (float)squareX, (float)squareY, 50.0f, 50.0f };
+        Rectangle obstacleRec = { (float)posX1, (float)posY1, 50.0f, 50.0f };
+
+        // Движение влево и вправо
+        if (IsKeyDown(KEY_A)) squareX -= speedX;
+        if (IsKeyDown(KEY_D)) squareX += speedX;
+
+        // Проверка на столкновение между игроком и препятствием
+       // Проверка на столкновение между игроком и препятствием
+        if (CheckCollisionRecs(playerRec, obstacleRec)) {
+            std::cout << "Collision detected!" << std::endl;
+            // Если персонаж находится в пределах блока и двигается вниз, прекращаем падение
+            if (squareY + squareSize > posY1 && squareX + squareSize > posX1 && squareX < posX1 + 50) {
+                squareY = posY1 - squareSize; // Размещаем персонажа на верхней части блока
+                isJumping = false; // Персонаж больше не в прыжке
+                velocityY = 0; // Останавливаем движение по оси Y
+            }
+            if (squareY - squareSize < posY1 && squareX - squareSize < posX1 && squareX > posX1 - 50) {
+                squareY = posY1 + squareSize; // Размещаем персонажа на верхней части блока
+                isJumping = false; // Персонаж больше не в прыжке
+                velocityY = 0; // Останавливаем движение по оси Y
+            }
+        }
+        // Начало прыжка при нажатии на пробел (если не прыгаем в данный момент)
+        if (IsKeyPressed(KEY_SPACE) && !isJumping) {
+            isJumping = true;
+            velocityY = -jumpSpeed; // Начальная скорость направлена вверх
+        }
+
+        // Если идет прыжок, изменяем положение квадрата по оси Y
+        if (isJumping) {
+            squareY += velocityY;   // Перемещаем квадрат по Y
+            velocityY += gravity;   // Увеличиваем скорость вниз для симуляции гравитации
+
+            // Проверка, достиг ли квадрат начального уровня
+            if (squareY >= screenHeight - squareSize) {
+                squareY = screenHeight - squareSize;
+                isJumping = false;  // Завершаем прыжок
+            }
+        }
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        // Отрисовываем квадрат
+        DrawRectangle(squareX, squareY, squareSize, squareSize, BLUE);
+
+        DrawRectangle(posX1, posY1, 50, 50, RED); // Рисуем препятствие
+
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}
