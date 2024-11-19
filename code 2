@@ -1,0 +1,93 @@
+#include "raylib.h"
+
+
+
+int main() {
+    // Настройки движения и прыжка
+    int screenWidth = 800;
+    int screenHeight = 600;
+    int squareSize = 20;
+    float speedX = 10.0f;         // Скорость движения по оси X
+    int jumpHeight = 200;    // Максимальная высота прыжка
+    float gravity = 0.5f;    // Сила гравитации
+    float jumpSpeed = 15.0f; // Начальная скорость прыжка
+
+    float wallX = 50.0f;
+    float wallY = 250.0f;
+    float wallsize = 20;
+
+    float wellX = 700;
+    float wellY = 500;
+    float wellWidth = 100;
+    float wellHeight = 20;
+
+
+    // Параметры квадрата
+    int squareX = screenWidth / 2 - squareSize / 2;
+    int squareY = screenHeight - squareSize;
+    bool isJumping = false;
+    float velocityY = 0;
+
+    int posX1 = 200, posY1 = 500;
+
+    InitWindow(screenWidth, screenHeight, "Moving and Jumping Square");
+
+
+
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        // Создание объектов прямоугольников для игрока и препятствия
+        Rectangle playerRec = { (float)squareX, (float)squareY, 20.0f, 20.0f };
+        Rectangle wallRec = { wallX, wallY, wallsize, wallsize };
+        Rectangle wellRec = { wellX, wellY, wellWidth, wellHeight };
+        // Движение влево и вправо
+        if (IsKeyDown(KEY_A)) squareX -= speedX;
+        if (IsKeyDown(KEY_D)) squareX += speedX;
+        if (IsKeyPressed(KEY_SPACE) && !isJumping) {
+            isJumping = true;
+            velocityY = -jumpSpeed; // Начальная скорость направлена вверх
+        }
+
+        // Проверка на столкновение между игроком и препятствием
+       // Проверка на столкновение между игроком и препятствием
+        if (CheckCollisionRecs(playerRec, wallRec)) {
+            if (IsKeyDown(KEY_SPACE)) isJumping = jumpSpeed;
+            if (IsKeyDown(KEY_D)) squareX += speedX;
+            if (IsKeyDown(KEY_A)) squareX -= speedX;
+        }
+        if (CheckCollisionRecs(playerRec, wellRec)) {
+            if (IsKeyDown(KEY_SPACE)) isJumping = jumpSpeed;
+            squareY = wellY - squareSize; // Размещаем персонажа на верхней части блока
+            isJumping = true; // Персонаж больше не в прыжке
+            velocityY = -jumpSpeed;; // Начальная скорость направлена вверх
+        }
+        // Если идет прыжок, изменяем положение квадрата по оси Y
+        if (isJumping) {
+            squareY += velocityY;   // Перемещаем квадрат по Y
+            velocityY += gravity;   // Увеличиваем скорость вниз для симуляции гравитации
+
+            // Проверка, достиг ли квадрат начального уровня
+            if (squareY >= screenHeight - squareSize) {
+                squareY = screenHeight - squareSize;
+                isJumping = false;  // Завершаем прыжок
+            }
+        }
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        // Отрисовываем квадрат
+        DrawRectangle(squareX, squareY, squareSize, squareSize, BLUE);
+
+        DrawRectangleGradientEx(wellRec, RED, RED, RED, RED); // Рисуем препятствие
+
+        EndDrawing();
+    }
+
+
+
+
+    CloseWindow();
+    return 0;
+}
