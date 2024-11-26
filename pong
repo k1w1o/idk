@@ -1,0 +1,99 @@
+#include "raylib.h"
+
+int main() {
+    // Инициализация окна
+    int screenWidth = 800;
+    int screenHeight = 600;
+    InitWindow(screenWidth, screenHeight, "Raylib Mouse Position Example");
+    int ballsize = 50, ballspeed = 5;
+    int ballX = 400, ballY = 300;
+    int posX = 30, posY = 200;
+    int playersize = 50;
+    int playerspeed = 10;
+    int posX1 = 710, posY1 = 200;
+    int enemysize = 50;
+    int enemyspeed = 10;
+    float velocityX = 0;
+    float velocityY = 0;
+    bool ballmoving = true;
+
+    SetTargetFPS(60);
+    // Главный игровой цикл
+    while (!WindowShouldClose()) {
+        Rectangle playerRec = { (float)posX, (float)posY, 50.0f, 250.0f };
+        Rectangle enemyRec = { (float)posX1, (float)posY, 50.0f, 250.0f };
+        Rectangle ballRec = { ballX, ballY, ballsize, ballsize };
+        if (IsKeyDown(KEY_W)) {
+            posY -= playerspeed;
+        }
+        if (IsKeyDown(KEY_S)) {
+            posY += playerspeed;
+        }
+        if (IsKeyDown(KEY_D)) {
+            posX += ballspeed;
+        }
+        if (IsKeyDown(KEY_UP)) {
+            posY1 -= enemyspeed;
+        }
+        if (IsKeyDown(KEY_DOWN)) {
+            posY1 += enemyspeed;
+        }
+        if (CheckCollisionRecs(playerRec, ballRec)) {
+            if (IsKeyDown(KEY_D)) posY += playerspeed;
+            if (IsKeyDown(KEY_A)) posY -= playerspeed;
+        }
+        if (CheckCollisionRecs(playerRec, ballRec)) {
+            ballX = posX + ballsize; // Размещаем персонажа на верхней части блока
+            velocityX = -ballspeed;
+            velocityY = -ballspeed;
+            ballmoving = false;
+        }
+        if (CheckCollisionRecs(enemyRec, ballRec)) {
+            ballX = posX1 - ballsize; // Размещаем персонажа на верхней части блока
+            velocityX = +ballspeed;
+            velocityY = -ballspeed;
+            ballmoving = true;
+        }
+        if (ballmoving) {
+            ballX -= ballspeed;
+            ballY -= ballspeed;
+        }
+        if (!ballmoving) {
+            ballX += playerspeed;
+            ballY += playerspeed;
+        }
+        if (ballY >= 0) {
+            ballY -= ballspeed;
+        }
+        if (ballY <= 0) {
+            ballY += ballspeed;
+        }
+        // Получение позиции мыши
+        Vector2 mousePosition = GetMousePosition();
+        // Начинаем рисование
+        BeginDrawing();
+
+        ClearBackground(BLACK); // Очистка экрана
+
+        // Выводим текст с позициями мыши в верхний правый угол
+        DrawText(TextFormat("X: %.2f Y: %.2f", mousePosition.x, mousePosition.y), screenWidth - 180, 10, 20, DARKGRAY);
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            DrawRectangle(mousePosition.x, mousePosition.y, 20, 20, GREEN);
+        }
+        DrawRectangle(posX, posY, playersize, playersize * 5, WHITE);
+        DrawRectangle(posX1, posY1, enemysize, enemysize * 5, WHITE);
+        DrawRectangleGradientEx(ballRec, WHITE, WHITE, WHITE, WHITE); // Рисуем препятствие
+
+        if (posY == 0) {
+
+        }
+
+        EndDrawing();
+    }
+
+    // Закрытие окна
+    CloseWindow();
+
+    return 0;
+}
