@@ -1,0 +1,141 @@
+#include "raylib.h"
+
+int main() {
+    // Инициализация окна
+    const int screenWidth = 800;
+    const int screenHeight = 600;
+    InitWindow(screenWidth, screenHeight, "Raylib Mouse Position Example");
+
+    const int ballSize = 50;
+    const float initialBallSpeed = 5.0f;
+    const float speedIncrease = 1.0f; // Увеличение скорости при столкновении
+    int ballX = 400, ballY = 300;
+    int playerX = 30, playerY = 200;
+    const int playerSize = 20;
+    const int playerSpeed = 10;
+    int enemyX = 710, enemyY = 200;
+    const int enemySize = 20;
+    const int enemySpeed = 10;
+    int point = 0;
+    int poent = 0;
+
+    float velocityX = initialBallSpeed; // Начальная скорость мяча по X
+    float velocityY = initialBallSpeed; // Начальная скорость мяча по Y
+    bool ballMoving = true;
+    bool count = false;
+    bool coent = false;
+    SetTargetFPS(60);
+
+    // Главный игровой цикл
+    while (!WindowShouldClose()) {
+        Rectangle playerRec = { (float)playerX, (float)playerY, (float)playerSize, (float)(playerSize * 5) };
+        Rectangle enemyRec = { (float)enemyX, (float)enemyY, (float)enemySize, (float)(enemySize * 5) };
+        Rectangle ballRec = { (float)ballX, (float)ballY, (float)ballSize, (float)ballSize };
+
+        // Обработка ввода игрока
+        if (IsKeyDown(KEY_W) && playerY > 0) {
+            playerY -= playerSpeed;
+        }
+        if (IsKeyDown(KEY_S) && playerY < screenHeight - playerSize * 5) {
+            playerY += playerSpeed;
+        }
+        if (IsKeyDown(KEY_UP) && enemyY > 0) {
+            enemyY -= enemySpeed;
+        }
+        if (IsKeyDown(KEY_DOWN) && enemyY < screenHeight - enemySize * 5) {
+            enemyY += enemySpeed;
+        }
+
+        // Обновление позиции мяча
+        if (ballMoving) {
+            ballX += velocityX;
+            ballY += velocityY;
+
+            // Проверка столкновения с верхней и нижней границей
+            if (ballY <= 0) {
+                ballY = 0; // Установить позицию мяча на верхнюю границу
+                velocityY = -velocityY; // Изменение направления по Y
+            }
+            if (ballY >= screenHeight - ballSize) {
+                ballY = screenHeight - ballSize; // Установить позицию мяча на нижнюю границу
+                velocityY = -velocityY; // Изменение направления по Y
+            }
+
+            // Проверка столкновения с игроком
+            if (CheckCollisionRecs(playerRec, ballRec)) {
+                ballX = playerX + playerSize;
+                velocityX = +initialBallSpeed + speedIncrease; // Увеличение скорости по X
+                velocityY *= 1.1; // Увеличение скорости по Y (можно настроить)
+            }
+            if (CheckCollisionRecs(playerRec, ballRec) && playerY + playerSize == ballY) {
+                ballY = playerY + playerSize;
+            }
+            // Проверка столкновения с врагом
+            if (CheckCollisionRecs(enemyRec, ballRec)) {
+                ballX = enemyX - ballSize; // Размещаем мяч слева от врага
+                velocityX = -initialBallSpeed - speedIncrease; // Увеличение скорости по X
+                velocityY *= 1.1; // Увеличение скорости по Y (можно настроить)
+            }
+            // Счиать тут
+            if (ballX - ballSize > screenWidth) {
+                coent = true;
+                ballY = screenHeight / 2;
+                ballX = screenWidth / 2;
+                velocityX = initialBallSpeed; // Сброс скорости
+                velocityY = initialBallSpeed; // Сброс скорости
+
+            }
+            if (count) {
+
+                poent += 1;
+
+                count = false;
+            }
+            if (ballX - ballSize < -150) {
+                count = true;
+                ballY = screenHeight / 2;
+                ballX = screenWidth / 2;
+                velocityX = initialBallSpeed; // Сброс скорости
+                velocityY = initialBallSpeed; // Сброс скорости
+            }
+            if (coent) {
+
+                point += 1;
+
+                coent = false;
+            }
+
+        }
+
+        // Получение позиции мыши
+        Vector2 mousePosition = GetMousePosition();
+ 
+
+        // Начинаем рисование
+        BeginDrawing();
+        ClearBackground(BLACK); // Очистка экрана
+
+        // Выводим текст с позициями мыши в верхний правый угол
+        DrawText(TextFormat("X: %.2f Y: %.2f", mousePosition.x, mousePosition.y), screenWidth - 180, 10, 20, DARKGRAY);
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            DrawRectangle(mousePosition.x, mousePosition.y, 20, 20, GREEN);
+        }
+
+        DrawRectangle(playerX, playerY, playerSize, playerSize * 5, WHITE);
+        DrawRectangle(enemyX, enemyY, enemySize, enemySize * 5, WHITE);
+        DrawRectangle(ballX, ballY, ballSize, ballSize, WHITE); // Рисуем мяч
+        DrawText(TextFormat("%i", point), screenWidth / 3.5, 20, 50, DARKGRAY);
+        DrawText(TextFormat("%i", poent), screenWidth / 1.5, 20, 50, DARKGRAY);
+        if (IsKeyPressed(KEY_R)) {
+            ballY = screenHeight / 2;
+            ballX = screenWidth / 2;
+            velocityX = initialBallSpeed; // Сброс скорости
+            velocityY = initialBallSpeed; // Сброс скорости
+        }
+        EndDrawing();
+    }
+
+    // Закрытие окна
+    CloseWindow();
+    return 0;
+}
