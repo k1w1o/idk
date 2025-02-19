@@ -1,0 +1,178 @@
+#include "raylib.h"
+
+int main() {
+    const int screenWidth =800;
+    const int screenHeight =600;
+    InitWindow(screenWidth, screenHeight, "Raylib Mouse Position Example");
+
+    const int ballSize = 50;
+    const float initialBallSpeed = 5.0f;
+    const float speedIncrease = 1.0f;
+    int ballX = 400, ballY = 300;
+    int playerX = 30, playerY =screenHeight/2;
+    const int playerSize = 20;
+    const int playerSpeed = 10;
+    int enemyX = screenWidth-50, enemyY =screenHeight/2;
+    const int enemySize = 20;
+    const int enemySpeed = 10;
+    int point = 0;
+    int poent = 0;
+    int R = GetRandomValue(-1, 1);
+    int K = GetRandomValue(-1, 1);
+
+
+    float velocityX = initialBallSpeed;
+    float velocityY = initialBallSpeed;
+    bool ballMoving = false;
+    bool count = false;
+    bool coent = false;
+    bool playerMoving = false;
+    bool enemyMoving = false;
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        Rectangle playerRec = { (float)playerX, (float)playerY, (float)playerSize, (float)(playerSize * 5) };
+        Rectangle enemyRec = { (float)enemyX, (float)enemyY, (float)enemySize, (float)(enemySize * 5) };
+        Rectangle ballRec = { (float)ballX, (float)ballY, (float)ballSize, (float)ballSize };
+
+        // Управление
+        if (IsKeyDown(KEY_W) && playerY > 0) {
+            playerY -= playerSpeed;
+            playerMoving = true;
+            ballMoving = true;
+        }
+        if (IsKeyDown(KEY_S) && playerY < screenHeight - playerSize * 5) {
+            playerY += playerSpeed;
+            playerMoving = true;
+            ballMoving = true;
+        }
+        if (IsKeyDown(KEY_UP) && enemyY > 0) {
+            enemyY -= enemySpeed;
+            enemyMoving = true;
+            ballMoving = true;
+        }
+        if (IsKeyDown(KEY_DOWN) && enemyY < screenHeight - enemySize * 5) {
+            enemyY += enemySpeed;
+            enemyMoving = true;
+            ballMoving = true;
+        }
+        
+        // столкновения
+        if (ballMoving) {
+            ballX += velocityX;
+            ballY += velocityY;
+
+            if (ballY <= 0) {
+                ballY = 0; 
+                velocityY = -velocityY;
+            }
+            if (ballY >= screenHeight - ballSize) {
+                ballY = screenHeight - ballSize;
+                velocityY = -velocityY;
+            }
+
+
+            if (CheckCollisionRecs(playerRec, ballRec)) {
+                ballX = playerX + playerSize;
+                velocityX = +initialBallSpeed + speedIncrease;
+                velocityY *= 1.1;
+                if (R == 0) {
+                    R = GetRandomValue(-1, 1);
+                    velocityY = initialBallSpeed * R * 1.1;
+                }
+            }
+            if (CheckCollisionRecs(playerRec, ballRec) && playerY + playerSize == ballY) {
+                ballY = playerY + playerSize;
+            }
+
+            if (CheckCollisionRecs(enemyRec, ballRec)) {
+                ballX = enemyX - ballSize;
+                velocityX = -initialBallSpeed - speedIncrease;
+                velocityY *= 1.1;
+                if (R == 0) {
+                    R = GetRandomValue(-1, 1);
+                    velocityY = initialBallSpeed * R * 1.1;
+                }
+            }
+            // Счиать тут
+            if (ballX - ballSize > screenWidth) {
+                coent = true;
+                ballY = screenHeight / 2;
+                ballX = screenWidth / 2;
+                R = GetRandomValue(-1, 1);
+                velocityX = initialBallSpeed;
+                velocityY = initialBallSpeed*R; 
+
+            }
+            if (count) {
+
+                poent += 1;
+
+                count = false;
+            }
+            if (ballX - ballSize < -150) {
+                count = true;
+                ballY = screenHeight / 2;
+                ballX = screenWidth / 2;
+                R = GetRandomValue(-1, 1);
+                velocityX = initialBallSpeed*(-1);
+                velocityY = initialBallSpeed*R; 
+            }
+            if (coent) {
+
+                point += 1;
+
+                coent = false;
+            }
+
+        }
+
+        //Начало
+        BeginDrawing();
+        ClearBackground(BLACK);
+
+        DrawRectangle(playerX, playerY, playerSize, playerSize * 5, WHITE);
+        DrawRectangle(enemyX, enemyY, enemySize, enemySize * 5, WHITE);
+        DrawRectangle(ballX, ballY, ballSize, ballSize, WHITE);
+        DrawLine(screenWidth/2,screenHeight, screenWidth / 2, 0, WHITE);
+        DrawText(TextFormat("%i", point), screenWidth / 3.5, 20, 50, DARKGRAY);
+        DrawText(TextFormat("%i", poent), screenWidth / 1.5, 20, 50, DARKGRAY);
+
+        if (IsKeyPressed(KEY_R)) {
+            ballY = screenHeight / 2;
+            ballX = screenWidth / 2;
+            playerY = screenHeight / 2;
+            enemyY = screenHeight / 2;
+            ballMoving = false;
+            playerMoving = false;
+            enemyMoving = false;
+            R = GetRandomValue(-1, 1);
+            K = GetRandomValue(-1, 1);
+            velocityY = initialBallSpeed * R;
+            if (K == 0) {
+                K += 1;
+            }
+            velocityX = initialBallSpeed * K;
+            point = 0;
+            poent = 0;
+            DrawText(TextFormat("%i", poent), screenWidth / 1.5, 20, 50, DARKGRAY);
+        }
+        if (!playerMoving) {
+            DrawText(TextFormat("^"), playerX + 52.5, playerY-20, 70, DARKGRAY);
+            DrawText(TextFormat("w"), playerX + 50, playerY, 50, WHITE);
+            DrawText(TextFormat("s"), playerX + 50, playerY+50, 50, WHITE);
+            DrawText(TextFormat("v"), playerX + 50, playerY + 85, 50, DARKGRAY);
+        }
+        if (!enemyMoving) {
+            DrawText(TextFormat("^"), enemyX - 52.5, enemyY - 20, 70, DARKGRAY);
+            DrawText(TextFormat("up"), enemyX - 70, enemyY, 50, WHITE);
+            DrawText(TextFormat("down"), enemyX - 120, enemyY + 50, 50, WHITE);
+            DrawText(TextFormat("v"), enemyX - 50, enemyY + 85, 50, DARKGRAY);
+        }
+        EndDrawing();
+    }
+
+    
+    CloseWindow();
+    return 0;
+}
